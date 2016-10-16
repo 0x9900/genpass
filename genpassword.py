@@ -5,8 +5,6 @@
 #
 # Fred C. http://github.com/0x9900/
 #
-from __future__ import print_function
-
 """
 Generate a passworg base on the domain name of a website, your
 userid on this website and a key.
@@ -24,8 +22,8 @@ yahoo.com: Password: vk61-borA-wlIu-BYSK
 yahoo.com: Password: vk61-borA-wlIu-BYSK
 
 """
+from __future__ import print_function
 import getpass
-import keyring
 import os
 import random
 import sys
@@ -35,17 +33,20 @@ from argparse import RawDescriptionHelpFormatter
 from hashlib import sha256
 from urlparse import urlparse
 
+import keyring
+
 PASSWD_LEN = 19
 ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
 
 def normalize_url(url):
+  """Extract the domain name from the url, remove the leading www and
+  return the domain name in lower case"""
   url = urlparse(url)
   url = url.netloc or url.path
   url = url.lower().replace('www.', '')
   return url
 
 def get_key(program, token='Password Generator'):
-
   """Try to find the encryption key for that token in the keyring. If
   the key cannot be found prompt the user.
 
@@ -63,6 +64,7 @@ def get_key(program, token='Password Generator'):
   return str(key)
 
 def parse_arguments():
+  """Parse the command arguments"""
   parser = ArgumentParser(
     description="Password generator",
     epilog=globals()['__doc__'],
@@ -83,13 +85,14 @@ def parse_arguments():
   if opts.url is None and opts.args:
     opts.url = opts.args.pop(0)
   if not opts.username or not opts.url:
-    parser.error()
+    parser.error("Argument missing")
 
   opts.url = normalize_url(opts.url)
 
   return opts
 
 def main():
+  """This is where everything happens"""
   opts = parse_arguments()
   if opts.interactive:
     key = getpass.getpass('Encryption key: ')
