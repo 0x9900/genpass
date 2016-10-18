@@ -73,21 +73,14 @@ def parse_arguments():
   parser.add_argument('-i', '--interactive', action="store_true",
                       default=False,
                       help="Do not use key stored in the keychain")
-  parser.add_argument('-u', '--username',
+  parser.add_argument('username', nargs=1,
                       help="Site username")
-  parser.add_argument('-d', '--url',
+  parser.add_argument('url', nargs=1,
                       help="Site's domain name http://example.com/")
-  parser.add_argument('args', nargs=2)
   opts = parser.parse_args()
+  opts.username = opts.username.pop()
+  opts.url = normalize_url(opts.url.pop())
 
-  if opts.username is None and opts.args:
-    opts.username = opts.args.pop(0)
-  if opts.url is None and opts.args:
-    opts.url = opts.args.pop(0)
-  if not opts.username or not opts.url:
-    parser.error("Argument missing")
-
-  opts.url = normalize_url(opts.url)
 
   return opts
 
