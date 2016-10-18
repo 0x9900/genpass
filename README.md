@@ -4,6 +4,9 @@ Generate Internet Password
 Generate a passworg base on the domain name of a website, your userid
 on this website and a key.
 
+This tool we generate the same password for a given use and domain
+name as long as you use the same key.
+
 The first time you use this program it will as you a key. This key
 will be stored in your Mac keychain.
 
