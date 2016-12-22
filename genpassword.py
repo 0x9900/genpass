@@ -98,7 +98,12 @@ def main():
   random.shuffle(charlist)
   password = ''.join([c if i%5 else '-' for i, c in
                       enumerate(charlist[:PASSWD_LEN], 1)])
-  print("Site: {}: Password: {}".format(opts.url, password))
+  if os.isatty(sys.stdout.fileno()):
+    print("Site: {}: Password: {}".format(opts.url, password))
+  else:
+    sys.stdout.write(password)
+    sys.stdout.flush()
+
 
 if __name__ == '__main__':
   main()

@@ -7,7 +7,7 @@ def readme():
 
 setup(
   name='genpassword',
-  version='0.0.1',
+  version='0.0.2',
   description='Generate Password.',
   long_description=readme(),
   url='https://github.com/0x9900/genpassword/',
