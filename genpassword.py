@@ -33,10 +33,37 @@ from argparse import RawDescriptionHelpFormatter
 from hashlib import sha256
 from urlparse import urlparse
 
+import json
 import keyring
 
 PASSWD_LEN = 19
 ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz'
+
+GENPASSWORD_DAT = '~/.genpassword.dat'
+
+class IJSONEncoder(json.JSONEncoder):
+  """Special JSON encoder capable of encoding sets"""
+  def default(self, obj):
+    if isinstance(obj, set):
+      return {'__type__': 'set', 'value': list(obj)}
+    else:
+      return super(IJSONEncoder, self).default(obj)
+
+class IJSONDecoder(json.JSONDecoder):
+  """Special JSON decoder capable of decoding sets encodes by IJSONEncoder"""
+  def __init__(self):
+    super(IJSONDecoder, self).__init__(object_hook=self.dict_to_object)
+
+  def dict_to_object(self, json_obj):
+    if '__type__' not in json_obj:
+      return json_obj
+    if json_obj['__type__'] == 'set':
+      return set(json_obj['value'])
+    return json_obj
+
+IENCODE = IJSONEncoder(indent=2).encode
+IDECODE = IJSONDecoder().decode
+
 
 def normalize_url(url):
   """Extract the domain name from the url, remove the leading www and
@@ -62,6 +89,20 @@ def get_key(program, token='Password Generator'):
       print(exp, file=sys.stderr)
 
   return str(key)
+
+def save_pwinfo(username, url):
+  try:
+    pifd = open(os.path.expanduser(GENPASSWORD_DAT), 'r+')
+    pwinfo = IDECODE(pifd.read())
+  except IOError:
+    pifd = open(os.path.expanduser(GENPASSWORD_DAT), 'a')
+    pwinfo = dict()
+
+  pwinfo.setdefault(url, set()).add(username)
+
+  pifd.seek(0L)
+  pifd.write(IENCODE(pwinfo))
+  pifd.close()
 
 def parse_arguments():
   """Parse the command arguments"""
@@ -98,6 +139,7 @@ def main():
   random.shuffle(charlist)
   password = ''.join([c if i%5 else '-' for i, c in
                       enumerate(charlist[:PASSWD_LEN], 1)])
+  save_pwinfo(opts.username, opts.url)
   if os.isatty(sys.stdout.fileno()):
     print("Site: {}: Password: {}".format(opts.url, password))
   else:
